@@ -17,6 +17,22 @@ library(lubridate)
 library(dplyr)
 library(ggplot2)
 
+# Convertir todos los valores negativos a ceros
+ventas[ventas < 0] = 0
+
+
+# Debido a que nuestra nuestra base de datos contiene 80 items, decidimos hacer una agrupacion por clase de item, 
+# obteniendo las siguientes categorias =
+# - AVR (Auto regulador de Voltaje).
+# - Data_Center (Accesorio para equipos).
+# - Line UPS (Baja capacidad, uso hogar).
+# - Online UPS (Alta capacidad, uso empresarial).
+# - Solar (Inversores Solares). 
+# - Storage_Battery (Almacenadores de Energia).
+# - Surge (Multitomas). 
+# - Accesorios. 
+
+
 # Agrupar por categorias 
 AVR = ventas%>% select(`Fecha`, `Item 10`, `Item 26`, `Item 30`, `Item 39`, `Item 45`, `Item 49`,
                        `Item 55`, `Item 62`, `Item 66`, `Item 79`)
@@ -90,37 +106,122 @@ Surge = Surge%>% mutate(Total = rowSums(select(., `Item 47`, `Item 54`, `Item 61
 Accesories = Accesories%>% mutate(Total = rowSums(select(., `Item 42`, `Item 73`), na.rm = TRUE))
 
 
-# Despues de un analidid de los datos decidomos que nos enfocaremos en 4 categoias que son : 
-# AVR, Line UPS, Online UPS, Battery Storage; Un total de 70 Items.
-# No se consideran las categorias Data Center, Solar, Surge, Accesories ya que podemos observar
-# gran cantidad de ceros por lo qie podemos incluir estos item a los que solo de vender por 
-# pedido especial y no es necesario tenerlos en inventario. 
+# Después de un análisis de los datos, decidimos enfocarnos en cuatro categorías: 
+# AVR, Line UPS, Online UPS y Battery Storage, que en total suman 70 ítems. 
+# No se han considerado las categorías de Data Center, Solar, Surge y Accesorios, 
+# ya que hemos observado una gran cantidad de ceros en estas, lo que sugiere que 
+# podemos incluir estos ítems para venta solo por pedido especial y no es necesario 
+# mantenerlos en inventario.
 
 
 
+# A continuacion haremos un analisis de cada ua de las categoria seleccionadas: 
 
-# Crear el gráfico de series de tiempo por categoria 
+# AVR (Auto regulador de Voltaje)
 
-ggplot(AVR, aes(x= Fecha, y= Total)) + 
-  geom_line()+
-  labs(title = "Ventas Categoria AVR", x= "Semana", y= "Ventas")
-theme_minimal()
-  
+# Convertir a serie de tiempo
+AVR_ts <- ts(AVR$Total, start = c(2021, 2), frequency = 52)
 
-ggplot(Line_UPS, aes(x= Fecha, y= Total)) + 
-  geom_line()+
-  labs(title = "Ventas Categoria Line UPS", x= "Semana", y= "Ventas")
-theme_minimal()
+AVR_ts
 
+# Verificar la clase del objeto
+class(AVR_ts) 
 
-ggplot(Online_UPS, aes(x= Fecha, y= Total)) + 
-  geom_line()+
-  labs(title = "Ventas Categoria Online UPS", x= "Semana", y= "Ventas")
-theme_minimal()
+# plot
+plot(AVR_ts, main= "AVR ", ylab= "Ventas", xlab= "Semana")
 
 
-ggplot(Storage_Battery, aes(x= Fecha, y= Total)) + 
-  geom_line()+
-  labs(title = "Ventas Categoria Storage Battery", x= "Semana", y= "Ventas")
-theme_minimal()
+# Calcular la media móvil ( de 4períodos)
+media_movil_AVR = stats::filter(AVR_ts, rep(1/4, 4), sides = 2)
+print(media_movil_AVR)
+
+plot(media_movil_AVR, main= "AVR Media Movil ", ylab= "Ventas", xlab= "Semana")
+
+
+# lag plot grafica de resagos 
+lag.plot(AVR_ts, 20, main = "AVR", do.lines = FALSE)
+
+
+______
+
+
+# Line UPS (Baja capacidad, uso hogar)
+
+# Convertir a serie de tiempo
+Line_UPS_ts <- ts(Line_UPS$Total, start = c(2021, 2), frequency = 52)
+
+Line_UPS_ts
+
+# Verificar la clase del objeto
+class(Line_UPS_ts) 
+
+# plot
+plot(Line_UPS_ts, main= "Line UPS ", ylab= "Ventas", xlab= "Semana")
+
+
+# Calcular la media móvil ( de 4períodos)
+media_movil_Line_UPS = stats::filter(Line_UPS_ts, rep(1/4, 4), sides = 2)
+print(media_movil_Line_UPS)
+
+plot(media_movil_Line_UPS, main= "Line UPS Media Movil ", ylab= "Ventas", xlab= "Semana")
+
+
+# lag plot grafica de resagos 
+lag.plot(Line_UPS_ts, 20, main = "Line UPS", do.lines = FALSE)
+
+_________
+
+
+# Online UPS (Alta capacidad, uso empresarial)
+
+# Convertir a serie de tiempo
+Online_UPS_ts <- ts(Online_UPS$Total, start = c(2021, 2), frequency = 52)
+
+Online_UPS_ts
+
+# Verificar la clase del objeto
+class(Online_UPS_ts) 
+
+# plot
+plot(Online_UPS_ts, main= "Online UPS ", ylab= "Ventas", xlab= "Semana")
+
+
+# Calcular la media móvil ( de 4períodos)
+media_movil_Online_UPS = stats::filter(Online_UPS_ts, rep(1/4, 4), sides = 2)
+print(media_movil_Online_UPS)
+
+plot(media_movil_Online_UPS, main= "Online UPS Media Movil ", ylab= "Ventas", xlab= "Semana")
+
+
+# lag plot grafica de resagos 
+lag.plot(Online_UPS_ts, 20, main = "Online UPS", do.lines = FALSE)
+
+
+_______
+
+
+# Storage_Battery (Almacenadores de Energia)
+
+# Convertir a serie de tiempo
+Storage_Battery_ts <- ts(Storage_Battery$Total, start = c(2021, 2), frequency = 52)
+
+Storage_Battery_ts
+
+# Verificar la clase del objeto
+class(Storage_Battery_ts) 
+
+# plot
+plot(Storage_Battery_ts, main= "Storage Battery ", ylab= "Ventas", xlab= "Semana")
+
+
+# Calcular la media móvil ( de 4períodos)
+media_movil_Storage_Battery = stats::filter(Storage_Battery_ts, rep(1/4, 4), sides = 2)
+print(media_movil_Storage_Battery)
+
+plot(media_movil_Storage_Battery, main= "Online UPS Media Movil ", ylab= "Ventas", xlab= "Semana")
+
+
+# lag plot grafica de resagos 
+lag.plot(Storage_Battery_ts, 20, main = "Storage Battery",  do.lines = FALSE)
+
 
